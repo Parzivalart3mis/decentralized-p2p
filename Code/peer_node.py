@@ -80,9 +80,18 @@ async def route_request(action, topic, data=None, target_node=None):
             elif action == 'publish':
                 message_storage.setdefault(topic, []).append(data)
                 logging.info(f"Routed 'publish' for topic '{topic}' to node {target_node}")
-            elif action in ('pull', 'query'):
-                # For pulling messages, return all stored messages
-                return message_storage.get(topic, [])
+            elif action == 'pull':
+                # Only return messages for the pull action
+                messages = message_storage.get(topic, [])
+                logging.info(f"Routed 'pull' for topic '{topic}' to node {target_node}")
+                return messages  # Return the list of messages
+            elif action == 'query':
+                # Return if topic exists in local DHT
+                if topic in local_dht:
+                    logging.info(f"Routed 'query' for topic '{topic}' to node {target_node}")
+                    return {"status": "Success", "node": target_node}
+                else:
+                    return "Topic not found."
             elif action == 'delete':
                 if topic in local_dht:
                     del local_dht[topic]
@@ -91,7 +100,7 @@ async def route_request(action, topic, data=None, target_node=None):
                     logging.info(f"Deleted topic '{topic}' from node {target_node}")
                 else:
                     return "Topic not found."
-            return "Success"
+            return "Topic not found."  # Default return for unspecified actions
         visited.add(current_node)
         for neighbor in get_neighbors(current_node):
             if neighbor not in visited:
@@ -154,10 +163,17 @@ async def query_topic(request: QueryTopicRequest):
     topic = request.topic
     target_node = format(hash_topic(topic), f'0{HYPERCUBE_DIMENSIONS}b')
     if target_node == peer_id:
-        logging.info(f"Queried topic '{topic}' locally.")
+        if topic in local_dht:
+            logging.info(f"Queried topic '{topic}' locally.")
+            return {"status": "Success", "node": target_node}
+        else:
+            raise HTTPException(status_code=404, detail="Topic not found.")
     else:
-        await route_request('query', topic, target_node=target_node)
-    return {"status": "Success", "node": target_node}
+        response = await route_request('query', topic, target_node=target_node)
+        if response == "Topic not found.":
+            raise HTTPException(status_code=404, detail="Topic not found.")
+    return response
+
 
 # API to delete a topic
 @app.post("/delete_topic")
