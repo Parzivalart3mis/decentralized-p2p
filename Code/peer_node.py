@@ -76,14 +76,13 @@ async def route_request(action, topic, data=None, target_node=None):
                 local_dht[topic] = data
                 logging.info(f"Created topic '{topic}' at node {target_node}")
             elif action == 'subscribe':
-                # For subscription, no data to save, just log
                 logging.info(f"Node {peer_id} subscribed to topic '{topic}' at node {target_node}.")
             elif action == 'publish':
                 message_storage.setdefault(topic, []).append(data)
                 logging.info(f"Routed 'publish' for topic '{topic}' to node {target_node}")
             elif action in ('pull', 'query'):
-                data = local_dht.get(topic, "Topic not found.")
-                logging.info(f"Routed '{action}' for topic '{topic}' to node {target_node}")
+                # For pulling messages, return all stored messages
+                return message_storage.get(topic, [])
             elif action == 'delete':
                 if topic in local_dht:
                     del local_dht[topic]
@@ -92,7 +91,7 @@ async def route_request(action, topic, data=None, target_node=None):
                     logging.info(f"Deleted topic '{topic}' from node {target_node}")
                 else:
                     return "Topic not found."
-            return data
+            return "Success"
         visited.add(current_node)
         for neighbor in get_neighbors(current_node):
             if neighbor not in visited:
