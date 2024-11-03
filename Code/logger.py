@@ -4,7 +4,7 @@ from datetime import datetime
 
 def setup_logger(peer_id):
     """Setup logger with a unique log file per node based on peer_id."""
-    log_dir = "Out/Logs"
+    log_dir = "../Out/Logs"
     os.makedirs(log_dir, exist_ok=True)
 
     # Generate a unique log file name for each node

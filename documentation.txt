@@ -1,0 +1,25 @@
+All nodes should be able to handle multiple requests simultaneously. You may achieve this using threads. You may also use other means to achieve this goal
+
+Asynchronous Handling with FastAPI and Async I/O
+Concurrency in FastAPI: Since FastAPI uses asynchronous I/O by default, async functions can serve multiple requests at the same time without blocking. For example, each async endpoint (e.g., publish_message, create_topic) can be processed in parallel by FastAPI’s event loop.
+httpx.AsyncClient: Since httpx.AsyncClient is also asynchronous, it allows for non-blocking requests to other nodes, which improves responsiveness even when nodes need to forward requests.
+
+
+
+The peer node must be able to host topics while it is simultaneously interacting with other topics.
+
+Yes, the setup you currently have with FastAPI and asynchronous handling allows a peer node to host topics and interact with other topics simultaneously. Here's how this setup addresses the requirement:
+
+Asynchronous Endpoints:
+
+The API endpoints (like create_topic, delete_topic, publish_message, etc.) are defined with async def, meaning FastAPI will process each request independently in a non-blocking way.
+This non-blocking, asynchronous handling allows the node to manage multiple incoming requests at the same time without waiting for one request to complete before starting another.
+Concurrent Request Handling:
+
+For example, if one request is made to create a topic, while another request comes in to publish a message to a different topic, the node can handle both requests concurrently.
+This concurrent handling ensures that hosting a topic (i.e., creating it, managing it, or updating it) does not interfere with other operations or topics.
+Parallel Processing for Multiple Topics:
+
+The asynchronous request handling allows the node to create, delete, publish to, and pull from multiple topics simultaneously. FastAPI, backed by httpx.AsyncClient, supports this by processing each API call in a way that doesn't block other requests.
+
+

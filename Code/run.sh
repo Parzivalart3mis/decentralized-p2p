@@ -14,7 +14,7 @@ for ((i=0; i<NUM_NODES; i++)); do
 
     # Start the FastAPI server for each node
     echo "Starting node $BINARY_ID on port $PORT..."
-    python Code/main.py $PORT $BINARY_ID &
+    python main.py $PORT $BINARY_ID &
 done
 
 # Wait for all background jobs to finish
