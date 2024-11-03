@@ -1,5 +1,7 @@
+# System files
 .idea
-
-Out/Logs
-
 .venv
+Code/__pycache__
+
+# Logs
+Out/Logs
