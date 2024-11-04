@@ -4,7 +4,6 @@ import time
 import subprocess
 import os
 import platform
-import signal
 
 # Assuming NODE_ADDRESSES matches the port each peer is running on
 NODE_ADDRESSES = {
@@ -25,36 +24,35 @@ MESSAGE = "Hello, Distributed World!"
 def generate_unique_topic_name(peer_id):
     return f"{BASE_TOPIC_NAME}_{peer_id}"
 
-
 async def create_topic(peer_url, topic):
     async with httpx.AsyncClient() as client:
         response = await client.post(f"{peer_url}/create_topic", json={"topic": topic})
         print(f"Create Topic: {response.json()}")
-
 
 async def delete_topic(peer_url, topic):
     async with httpx.AsyncClient() as client:
         response = await client.post(f"{peer_url}/delete_topic", json={"topic": topic})
         print(f"Delete Topic: {response.json()}")
 
-
 async def publish_message(peer_url, topic, message):
     async with httpx.AsyncClient() as client:
         response = await client.post(f"{peer_url}/publish_message", json={"topic": topic, "message": message})
         print(f"Publish Message: {response.json()}")
-
 
 async def subscribe(peer_url, topic):
     async with httpx.AsyncClient() as client:
         response = await client.post(f"{peer_url}/subscribe", json={"topic": topic})
         print(f"Subscribe: {response.json()}")
 
-
 async def pull_messages(peer_url, topic):
     async with httpx.AsyncClient() as client:
         response = await client.post(f"{peer_url}/pull_messages", json={"topic": topic})
         print(f"Pull Messages: {response.json()}")
 
+async def query_topic(peer_url, topic):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(f"{peer_url}/query_topic", json={"topic": topic})
+        print(f"Query Topic: {response.json()}")
 
 async def main():
     # Set up concurrent tasks
@@ -78,10 +76,13 @@ async def main():
     pull_tasks = [pull_messages(peer_url, generate_unique_topic_name(peer_id)) for peer_id, peer_url in NODE_ADDRESSES.items()]
     await asyncio.gather(*pull_tasks)
 
+    # Query topics to ensure they are retrievable
+    query_tasks = [query_topic(peer_url, generate_unique_topic_name(peer_id)) for peer_id, peer_url in NODE_ADDRESSES.items()]
+    await asyncio.gather(*query_tasks)
+
     # Clean up by deleting the topic concurrently
     delete_tasks = [delete_topic(peer_url, generate_unique_topic_name(peer_id)) for peer_id, peer_url in NODE_ADDRESSES.items()]
     await asyncio.gather(*delete_tasks)
-
 
 # Function to kill peer processes based on OS
 def kill_peer_processes():
@@ -95,7 +96,6 @@ def kill_peer_processes():
             subprocess.run(f"for /f \"tokens=5\" %i in ('netstat -ano ^| findstr :{port}') do taskkill /PID %i /F", shell=True)
     else:
         print("Unsupported OS for killing processes.")
-
 
 # Run the test script
 if __name__ == "__main__":
