@@ -1,8 +1,0 @@
-2024-10-11 02:10:37 - Peer node 'peer1' registered.
-2024-10-11 02:10:42 - Topic 'test_topic' created.
-2024-10-11 02:10:42 - Peer 'peer1' subscribed to topic 'test_topic'.
-2024-10-11 02:10:42 - Published message 'Message from peer1' to topic 'test_topic'.
-2024-10-11 02:10:44 - Peer 'peer1' pulled messages from topic 'test_topic': ['Message from peer1']
-2024-10-11 02:10:44 - Peers subscribed to topic 'test_topic': ['peer1']
-2024-10-11 02:10:44 - Deleted topic 'test_topic' and notified all peers.
-2024-10-11 02:10:44 - Peer node 'peer1' unregistered.

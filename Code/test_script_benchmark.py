@@ -15,7 +15,7 @@ PLOTTING_DIR = "../Out/Images"
 if not os.path.exists(PLOTTING_DIR):
     os.makedirs(PLOTTING_DIR)
 
-# Assuming NODE_ADDRESSES matches the port each peer is running on
+# Node addresses
 NODE_ADDRESSES = {
     "000": "http://127.0.0.1:5000",
     "001": "http://127.0.0.1:5001",
@@ -28,15 +28,15 @@ NODE_ADDRESSES = {
 }
 
 # Benchmarking settings
-MAX_TOPICS = 1000  # Run tests up to 1000 topics
-STEP_SIZE = 100    # Increment by 100 topics each time
+MAX_TOPICS = 1000  # Run tests up to 15 topics
+STEP_SIZE = 100    # Increment by 3 topics each time
 
 # Generate a unique topic name
 def generate_topic_name(peer_id):
     random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
     return f"test_topic_{peer_id}_{random_string}"
 
-async def perform_operations(peer_id, peer_url, topic_name):
+async def perform_operations(peer_url, topic_name):
     async with httpx.AsyncClient() as client:
         # Step 1: Create Topic
         await client.post(f"{peer_url}/create_topic", json={"topic": topic_name})
@@ -45,41 +45,41 @@ async def perform_operations(peer_id, peer_url, topic_name):
         message = "Hello, Distributed World!"
         await client.post(f"{peer_url}/publish_message", json={"topic": topic_name, "message": message})
 
-        # Step 3: Subscribe All Nodes
-        for node_id, node_url in NODE_ADDRESSES.items():
-            await client.post(f"{node_url}/subscribe", json={"topic": topic_name})
+        # Step 3: Subscribe (on selected node only)
+        await client.post(f"{peer_url}/subscribe", json={"topic": topic_name})
 
-        # Step 4: Pull Messages
-        for node_id, node_url in NODE_ADDRESSES.items():
-            await client.post(f"{node_url}/pull_messages", json={"topic": topic_name})
+        # Step 4: Pull Messages (on selected node only)
+        await client.post(f"{peer_url}/pull_messages", json={"topic": topic_name})
 
-        # Step 5: Query Topic
+        # Step 5: Query Topic (on selected node only)
         await client.post(f"{peer_url}/query_topic", json={"topic": topic_name})
 
-        # Step 6: Delete Topic
+        # Step 6: Delete Topic (on selected node only)
         await client.post(f"{peer_url}/delete_topic", json={"topic": topic_name})
 
 async def main():
     results_latency = []
     results_throughput = []
 
-    for num_topics in range(1, MAX_TOPICS + 2, STEP_SIZE):
+    for num_topics in range(1, MAX_TOPICS + 1, STEP_SIZE):
         print(f"Testing with {num_topics} topics...")
         total_time = 0
         successful_requests = 0
 
         # Run all operations for `num_topics` unique topics
         for _ in range(num_topics):
-            for peer_id, peer_url in NODE_ADDRESSES.items():
-                topic_name = generate_topic_name(peer_id)
+            # Randomly select one node for all operations of this topic
+            selected_peer_id = random.choice(list(NODE_ADDRESSES.keys()))
+            peer_url = NODE_ADDRESSES[selected_peer_id]
+            topic_name = generate_topic_name(selected_peer_id)
 
-                # Perform the sequence of operations
-                start_time = time.time()
-                await perform_operations(peer_id, peer_url, topic_name)
-                elapsed_time = time.time() - start_time
+            # Perform the sequence of operations on the selected node
+            start_time = time.time()
+            await perform_operations(peer_url, topic_name)
+            elapsed_time = time.time() - start_time
 
-                total_time += elapsed_time
-                successful_requests += 1
+            total_time += elapsed_time
+            successful_requests += 1
 
         # Calculate and record metrics for this run
         avg_latency = total_time / successful_requests if successful_requests else 0

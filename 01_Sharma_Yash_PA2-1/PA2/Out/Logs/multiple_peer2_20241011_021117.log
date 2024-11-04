@@ -1,6 +1,0 @@
-2024-10-11 02:11:17 - Peer node peer2 started
-2024-10-11 02:11:17 - Peer node peer2 registered with the indexing server.
-2024-10-11 02:11:22 - Peer 'peer2' subscribed to topic 'test_topic'.
-2024-10-11 02:11:22 - Published message 'Message from peer2' to topic 'test_topic'.
-2024-10-11 02:11:24 - Peer 'peer2' pulled messages from topic 'test_topic': ['Message from peer1', 'Message from peer2', 'Message from peer3']
-2024-10-11 02:11:24 - Peer node peer2 unregistered and exiting.

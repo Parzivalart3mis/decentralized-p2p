@@ -1,6 +1,0 @@
-To use this Makefile:
-Run make all to set up the environment, install dependencies, and run all tests.
-Run make run_benchmark to run only the benchmark test.
-Run make run_peer_test to run only the peer test.
-Run make deploy to deploy the nodes using the deployment script.
-Run make clean to clean up the environment after testing.
