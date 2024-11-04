@@ -28,7 +28,8 @@ NODE_ADDRESSES = {
 }
 
 # Benchmarking settings
-MAX_TOPICS = 10  # Run tests from 1 to MAX_TOPICS topics
+MAX_TOPICS = 1000  # Run tests up to 1000 topics
+STEP_SIZE = 100    # Increment by 100 topics each time
 
 # Generate a unique topic name
 def generate_topic_name(peer_id):
@@ -62,7 +63,8 @@ async def main():
     results_latency = []
     results_throughput = []
 
-    for num_topics in range(1, MAX_TOPICS + 1):
+    for num_topics in range(1, MAX_TOPICS + 2, STEP_SIZE):
+        print(f"Testing with {num_topics} topics...")
         total_time = 0
         successful_requests = 0
 
@@ -89,9 +91,11 @@ async def main():
     plot_results(results_latency, results_throughput)
 
 def plot_results(results_latency, results_throughput):
+    topic_counts = range(STEP_SIZE, MAX_TOPICS + 1, STEP_SIZE)
+
     # Latency plot
     plt.figure(figsize=(10, 6))
-    plt.plot(range(1, MAX_TOPICS + 1), results_latency, label='Latency')
+    plt.plot(topic_counts, results_latency, label='Latency')
     plt.title('Average Latency vs Number of Topics')
     plt.xlabel('Number of Topics')
     plt.ylabel('Latency (seconds)')
@@ -102,7 +106,7 @@ def plot_results(results_latency, results_throughput):
 
     # Throughput plot
     plt.figure(figsize=(10, 6))
-    plt.plot(range(1, MAX_TOPICS + 1), results_throughput, label='Throughput')
+    plt.plot(topic_counts, results_throughput, label='Throughput')
     plt.title('Throughput vs Number of Topics')
     plt.xlabel('Number of Topics')
     plt.ylabel('Throughput (requests/second)')
